@@ -1,0 +1,9 @@
+{
+	"id": "page-background-customizer",
+	"name": "Page Background Customizer",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Set custom background images for Obsidian pages.",
+	"author": "Sergey Pozhilov",
+	"isDesktopOnly": false
+}
