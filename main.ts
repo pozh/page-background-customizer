@@ -1,4 +1,4 @@
-import { Plugin, Modal, Setting, App } from "obsidian";
+import { Plugin, MarkdownView, FileView, Modal, Setting, App } from "obsidian";
 
 class UrlInputModal extends Modal {
   constructor(app: App, onSubmit: (url: string) => void) {
@@ -31,7 +31,11 @@ class UrlInputModal extends Modal {
 
 export default class PageBackgroundCustomizer extends Plugin {
   getNoteContainer(): HTMLElement | null {
-    return document.querySelector(".markdown-preview-view") || document.querySelector(".markdown-source-view");
+    let root = this.app.workspace.getActiveViewOfType(
+      MarkdownView
+    );
+    if (!root) root = this.app.workspace.getActiveViewOfType(FileView) as any;
+    return root ? root.containerEl.querySelector(".view-content") : null;
   }
 
   getBackgroundUrl(): string | undefined {
@@ -45,6 +49,7 @@ export default class PageBackgroundCustomizer extends Plugin {
 
   applyBackgroundStyle() {
     const container = this.getNoteContainer();
+    console.log("Applying background style to", container)
     const bgUrl = this.getBackgroundUrl();
     if (container && bgUrl) {
       container.style.backgroundImage = `url('${bgUrl}')`;
@@ -53,6 +58,8 @@ export default class PageBackgroundCustomizer extends Plugin {
   }
 
   async onload() {
+    console.log("Page Background Customizer loaded");
+    
     this.addCommand({
       id: "set-page-background-image",
       name: "Set Page Background Image",
@@ -77,8 +84,15 @@ export default class PageBackgroundCustomizer extends Plugin {
       })
     );
 
-    const container = this.getNoteContainer();
-    const bgUrl = this.getBackgroundUrl();
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (_leaf) => {
+        const activeFile = this.app.workspace.getActiveFile();
+        if (activeFile) {
+          this.applyBackgroundStyle();
+        }
+      })
+    );
+
     this.applyBackgroundStyle();
   }
 
